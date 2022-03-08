@@ -75,5 +75,4 @@ def chm(dtm: str, dsm: str, name: str) -> np.ndarray:
     with rasterio.open(dsm, "r") as file:
         dsm = file.read(1)
     chm = dsm - dtm
-    print(type(chm))
     return chm
