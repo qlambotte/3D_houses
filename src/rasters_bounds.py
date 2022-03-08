@@ -9,19 +9,9 @@ The data is extracted from:  https://www.geopunt.be/download?container=kaartblad
 
 import geopandas as gp
 
-gf = gp.read_file(
-    "./data/Kbl/Kbl.shp"
-)
+gf = gp.read_file("./data/Kbl/Kbl.shp")
 
-squares = gf[["UIDN","CODE", "geometry"]]
+squares = gf[["UIDN", "CODE", "geometry"]]
 
-# for i in range(gf.shape[0]):
-#     squares.loc[i,
-#                 ['west_bound',
-#                  'south_bound',
-#                  'east_bound',
-#                  'north_bound']
-#                 ] = squares.loc[i,'geometry'].bounds
-
-if __name__ == '__main__':
-    squares.to_csv('./data/rasters_limits.csv')
+if __name__ == "__main__":
+    squares.to_csv("./data/rasters_limits.csv")
