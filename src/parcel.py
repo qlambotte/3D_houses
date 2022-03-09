@@ -5,7 +5,10 @@ from shapely.geometry import Point, Polygon
 from utilities import bbox_enlarged, square_envelope
 import requests
 import json
-
+from skimage import io
+import base64
+import numpy as np
+import cv2, wget
 
 def get_info_parcel(
     street: str, commune: str, postcode: int, number: str
@@ -48,7 +51,7 @@ def get_object_details(parcel: json) -> dict:
     return details
 
 
-def get_map_parcel(parcel_details: dict, frac: float=0.3) -> str:
+def get_map_parcel(parcel_details: dict, frac: float=0.3) -> np.ndarray:
     bbox = parcel_details["bbox"].bounds
     x_min, y_min, x_max, y_max = square_envelope(bbox_enlarged(bbox, frac=frac))
     url = (
@@ -57,8 +60,5 @@ def get_map_parcel(parcel_details: dict, frac: float=0.3) -> str:
         "&HEIGHT=1024&LAYERS=GRB_BSK&FORMAT=image/geotiff"
         f"&SRS=EPSG:31370&BBOX={x_min},{y_min},{x_max},{y_max}"
     )
-    r = requests.get(url)
-    name = parcel_details["id_adress"]
-    with open(f"./data/{name}.tiff", "wb") as file:
-        file.write(r.content)
-    return f"./data/{name}.tiff"
+    r = wget.download(url)
+    return cv2.imread(r)

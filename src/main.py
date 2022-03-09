@@ -1,6 +1,8 @@
 import numpy as np
 import rasterio
 import typing
+import timeit
+import time
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 from plotly.offline import download_plotlyjs, plot
@@ -31,7 +33,7 @@ def plot3d(chm: np.ndarray, parcel_image: typing.IO, adress: str) -> None:
         ),
         font=dict(family="Courier New, monospace", size=18),
     )
-    fig.add_trace(go.Image(z=io.imread(parcel_image)), row=1, col=1)
+    fig.add_trace(go.Image(z=parcel_image), row=1, col=1)
     fig.update_layout(
         yaxis={"visible": False, "showticklabels": False},
         xaxis={"visible": False, "showticklabels": False},
@@ -75,30 +77,24 @@ if __name__ == "__main__":
         postcode = 9000
         commune = "Gent"
     adress = f"{street} {number}, {postcode} {commune}"
+    tic = time.perf_counter()
     parcel_ = parcel.get_info_parcel(street, commune, postcode, number)
     parcel_details = parcel.get_object_details(parcel_)
     bbox = parcel_details["bbox"]
     rasters_info = u.rasters_of_bbox(
         bbox.bounds, "./data/Kbl/Kbl.shp", "geometry", "CODE"
     )
-    shapes = [bbox]
+    shapes = [
+        parcel_details[key]
+        for key in parcel_details.keys()
+        if "building" in key
+    ]
     for name, id in rasters_info.items():
         dsm = path_of_id(id, "dsm")
         dtm = path_of_id(id, "dtm")
         rasters.crop_rasters(dsm, dtm, shapes, name)
     if len(rasters_info) > 1:
         rasters.merge("all")
-    shapes = [
-        parcel_details[key]
-        for key in parcel_details.keys()
-        if "building" in key
-    ]
-    rasters.crop_rasters(
-        "./data/all_dsm_croped.tiff",
-        "./data/all_dtm_croped.tiff",
-        shapes,
-        "all",
-    )
     chm = rasters.chm(
         "./data/all_dtm_croped.tiff",
         "./data/all_dsm_croped.tiff",
